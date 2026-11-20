@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Chowka Bara</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Chowka Bara 3D: Sacred Temple Court</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+/* Dynamic Toss Shells Button Team Theme Variations */
+.btn-team-red {
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
+    color: #ffffff !important;
+    border-color: #fca5a5 !important;
+    box-shadow: 0 4px 18px rgba(220, 38, 38, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+.btn-team-green {
+    background: linear-gradient(135deg, #16a34a 0%, #14532d 100%) !important;
+    color: #ffffff !important;
+    border-color: #86efac !important;
+    box-shadow: 0 4px 18px rgba(22, 163, 74, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+.btn-team-gold {
+    background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%) !important;
+    color: #3b1a03 !important;
+    border-color: #fde047 !important;
+    box-shadow: 0 4px 18px rgba(245, 158, 11, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.4) !important;
+}
+
+.btn-team-blue {
+    background: linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%) !important;
+    color: #ffffff !important;
+    border-color: #93c5fd !important;
+    box-shadow: 0 4px 18px rgba(37, 99, 235, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+    /* Glassmorphism HUD */
+    .glass-pill {
+      background: rgba(24, 15, 10, 0.78);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+    }
+
+    /* 2D Cowrie Shell Tray & Tumbling Animation */
+    .cowrie-card {
+      width: 56px;
+      height: 72px;
+      border-radius: 14px;
+      background: rgba(45, 25, 14, 0.85);
+      border: 1.5px solid rgba(245, 158, 11, 0.35);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    .cowrie-card.mouth-up {
+      border-color: #fbbf24;
+      background: rgba(120, 53, 15, 0.55);
+      box-shadow: 0 0 16px rgba(251, 191, 36, 0.35);
+    }
+    @keyframes cowrieToss {
+      0%   { transform: translateY(0) rotate(0deg) scale(1); }
+      25%  { transform: translateY(-28px) rotate(-25deg) scale(1.18); }
+      55%  { transform: translateY(-16px) rotate(22deg) scale(1.12); }
+      80%  { transform: translateY(-5px) rotate(-10deg) scale(1.04); }
+      100% { transform: translateY(0) rotate(0deg) scale(1); }
+    }
+    .tossing {
+      animation: cowrieToss 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Toast Notification */
+    @keyframes toastPop {
+      0% { opacity: 0; transform: translate(-50%, 16px) scale(0.92); }
+      15% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+      85% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -12px) scale(0.95); }
+    }
+    .toast-anim {
+      animation: toastPop 2.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Pulse ring for selectable pawns */
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7); }
+      50% { box-shadow: 0 0 0 12px rgba(251, 191, 36, 0); }
+    }
+    .btn-glow { animation: pulseGlow 1.8s infinite; }
+  </style>
+</head>
+<body>
+  <!-- 3D Temple Courtyard Canvas -->
+  <div id="canvas-container"></div>
+
+  <!-- Minimalist Top HUD Bar -->
+  <div id="hud-top" class="hidden fixed top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+    <!-- Active Turn & Team Status -->
+    <div class="glass-pill rounded-2xl px-4 py-2.5 flex items-center gap-3 pointer-events-auto">
+      <div id="turn-badge" class="w-9 h-9 rounded-xl flex items-center justify-center text-lg font-bold shadow-inner border border-amber-300/40 bg-red-600 text-white">
+        🐘
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span id="turn-name" class="font-temple text-amber-200 font-bold text-sm sm:text-base tracking-wide">Red Gaja (You)</span>
+          <span id="cut-badge" class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-950/90 text-amber-300 border border-amber-500/40 font-bold">
+            🔒 Cut Needed
+          </span>
+        </div>
+        <p id="turn-hint" class="text-xs text-amber-100/80 font-medium">Toss the 4 Kavade cowrie shells to begin</p>
+      </div>
+    </div>
+
+    <!-- Scoreboard Mini Pills -->
+    <div id="team-pills" class="hidden md:flex items-center gap-2 pointer-events-auto"></div>
+
+    <!-- Camera & Menu Controls -->
+    <div class="flex items-center gap-2 pointer-events-auto">
+      <button onclick="toggleCameraMode()" class="glass-pill hover:bg-amber-950/80 text-amber-100 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition active:scale-95">
+        <span>🎥</span>
+        <span id="camLabel">Whole Board</span>
+      </button>
+      <button onclick="toggleRulesModal(true)" class="glass-pill hover:bg-amber-950/80 text-amber-200 w-9 h-9 rounded-xl text-sm font-bold flex items-center justify-center transition active:scale-95" title="Chowka Bara Rules">
+        📜
+      </button>
+      <button onclick="resetToMenu()" class="glass-pill hover:bg-red-950/80 text-red-200 px-3 py-2 rounded-xl text-xs font-bold transition active:scale-95">
+        Menu
+      </button>
+    </div>
+  </div>
+
+  <!-- Floating Auto-Fade Toast Message -->
+  <div id="toast-container" class="fixed top-20 left-1/2 -translate-x-1/2 z-30 pointer-events-none"></div>
+
+  <!-- Bottom-Right 2D Cowrie (Kavade) Tray & Toss Button -->
+  <div id="hud-bottom" class="hidden fixed bottom-4 right-4 left-4 sm:left-auto z-20 flex flex-col items-center sm:items-end gap-2.5 pointer-events-none">
+    <div class="glass-pill rounded-3xl p-3.5 sm:p-4 flex flex-col items-center gap-3 pointer-events-auto w-full sm:w-auto max-w-sm">
+      <!-- 2D Cowrie Shells Display -->
+      <div class="flex items-center justify-between w-full gap-2">
+        <span class="text-[11px] font-bold uppercase tracking-widest text-amber-300/90">Sacred Kavade</span>
+        <span id="roll-result-pill" class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-200 border border-amber-400/40">
+          Ready
+        </span>
+      </div>
+
+      <div id="cowrie-tray" class="flex items-center justify-center gap-2.5">
+        <!-- 4 SVG Cowrie Shells generated by JS -->
+      </div>
+
+      <!-- Toss / Action Button -->
+      <button id="roll-btn" onclick="handleTossClick()" class="btn-glow w-full py-3 px-6 rounded-2xl font-temple font-bold text-sm sm:text-base tracking-wider uppercase text-amber-950 bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 hover:from-amber-200 hover:to-amber-400 shadow-lg shadow-amber-500/30 transition transform active:scale-95 disabled:opacity-45 disabled:cursor-not-allowed disabled:animate-none">
+        🐚 Toss Kavade Shells
+      </button>
+    </div>
+  </div>
+
+  <!-- Start Screen Overlay -->
+  <div id="start-modal" class="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm">
+    <div class="glass-pill max-w-md w-full rounded-3xl p-6 sm:p-8 text-center border-2 border-amber-400/50">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold uppercase tracking-widest mb-3">
+        <span>🪷</span> Ancient Indian Royal Board Game
+      </div>
+      <h1 class="font-temple text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-200 via-amber-400 to-orange-500 drop-shadow mb-2">
+        CHOWKA BARA 3D
+      </h1>
+      <p class="text-amber-100/80 text-xs sm:text-sm mb-6 leading-relaxed">
+        Command your sacred temple guardians across the 5×5 teakwood court. Capture an opponent to unlock the inner sanctum and race all 4 pieces to the Center Gaddi!
+      </p>
+
+      <!-- Game Mode Selection -->
+      <div class="space-y-3 mb-6 text-left">
+        <label class="block text-xs font-bold uppercase tracking-wider text-amber-300/90">Choose Match Setup</label>
+        <div class="grid grid-cols-2 gap-2.5">
+          <button id="mode-1v1ai-btn" onclick="selectSetupMode('1v1_ai')" class="p-2.5 rounded-2xl border border-amber-400/30 bg-amber-950/50 text-amber-200/75 font-bold text-xs flex flex-col items-center gap-1 transition">
+            <span class="text-lg">⚔️🤖</span>
+            <span>1P vs 1 AI (Opposite)</span>
+          </button>
+          <button id="mode-1v1pvp-btn" onclick="selectSetupMode('1v1_pvp')" class="p-2.5 rounded-2xl border-2 border-amber-400 bg-amber-500/25 text-amber-100 font-bold text-xs flex flex-col items-center gap-1 transition">
+            <span class="text-lg">⚔️👥</span>
+            <span>1P vs 1P (Opposite)</span>
+          </button>
+          <button id="mode-4ai-btn" onclick="selectSetupMode('4p_ai')" class="p-2.5 rounded-2xl border border-amber-400/30 bg-amber-950/50 text-amber-200/75 font-bold text-xs flex flex-col items-center gap-1 transition">
+            <span class="text-lg">👑🤖</span>
+            <span>1P vs 3 AI (4P)</span>
+          </button>
+          <button id="mode-4pvp-btn" onclick="selectSetupMode('4p_pvp')" class="p-2.5 rounded-2xl border border-amber-400/30 bg-amber-950/50 text-amber-200/75 font-bold text-xs flex flex-col items-center gap-1 transition">
+            <span class="text-lg">👑👥</span>
+            <span>4P Pass & Play</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4 Teams Preview -->
+      <div class="grid grid-cols-4 gap-2 mb-6">
+        <div id="preview-team-0" class="p-2 rounded-xl bg-red-950/60 border border-red-400/40 text-center transition">
+          <div class="text-xl">🐘</div>
+          <div class="text-[11px] font-bold text-red-200">Red Gaja</div>
+        </div>
+        <div id="preview-team-1" class="p-2 rounded-xl bg-emerald-950/60 border border-emerald-400/40 text-center opacity-40 transition">
+          <div class="text-xl">🦚</div>
+          <div class="text-[11px] font-bold text-emerald-200">Green Mayura</div>
+        </div>
+        <div id="preview-team-2" class="p-2 rounded-xl bg-amber-950/60 border border-amber-400/40 text-center transition">
+          <div class="text-xl">🦁</div>
+          <div class="text-[11px] font-bold text-amber-200">Gold Simha</div>
+        </div>
+        <div id="preview-team-3" class="p-2 rounded-xl bg-sky-950/60 border border-sky-400/40 text-center opacity-40 transition">
+          <div class="text-xl">🐒</div>
+          <div class="text-[11px] font-bold text-sky-200">Blue Vanara</div>
+        </div>
+      </div>
+
+      <button onclick="startGame()" class="w-full py-3.5 px-6 rounded-2xl font-temple font-black text-base tracking-wider uppercase text-amber-950 bg-gradient-to-r from-amber-300 via-yellow-400 to-orange-400 hover:brightness-110 shadow-xl shadow-amber-500/30 transition transform active:scale-95">
+        Enter Temple Court
+      </button>
+    </div>
+  </div>
+
+  <!-- Rules Modal -->
+  <div id="rules-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div class="glass-pill max-w-lg w-full rounded-3xl p-6 text-amber-100 border border-amber-400/50 max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-temple text-xl font-bold text-amber-300">📜 Sacred Rules of Chowka Bara</h2>
+        <button onclick="toggleRulesModal(false)" class="w-8 h-8 rounded-full bg-amber-900/60 text-amber-200 font-bold">✕</button>
+      </div>
+      <ul class="space-y-2.5 text-xs sm:text-sm text-amber-100/90 leading-relaxed">
+        <li><strong class="text-amber-300">🐚 4 Cowrie Shells (Kavade):</strong> Mouth-up shells count as 1 each (1, 2, 3). All 4 mouth-up = <strong>4 (Chowka)</strong> + Bonus Turn! All 4 back-up = <strong>8 (Bara / Ashta)</strong> + Bonus Turn!</li>
+        <li><strong class="text-amber-300">⚔️ Capture (Cut) Rule:</strong> Landing on a single opponent on any non-crossed square sends that opponent <strong>straight back to their Home House</strong> and grants you a <strong>Bonus Toss</strong>!</li>
+        <li><strong class="text-amber-300">🛡️ Safe Katte Squares:</strong> The 4 starting houses and 4 inner crossed squares are sanctuaries—nobody can be captured there.</li>
+        <li><strong class="text-amber-300">🔓 Inner Ring Lock:</strong> You must capture at least <strong>1 opponent</strong> ("Cut") before your pieces can enter the inner ring toward the Center Gaddi.</li>
+        <li><strong class="text-amber-300">👑 Victory:</strong> Be the first player to guide all <strong>4 of your pieces</strong> into the Center Gaddi sanctuary by exact roll!</li>
+      </ul>
+      <button onclick="toggleRulesModal(false)" class="mt-5 w-full py-2.5 rounded-xl bg-amber-400 text-amber-950 font-bold text-sm">
+        Got It
+      </button>
+    </div>
+  </div>
+
+  <!-- Game Over Modal -->
+  <div id="gameover-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+    <div class="glass-pill max-w-md w-full rounded-3xl p-7 text-center border-2 border-amber-400">
+      <div id="winner-emoji" class="text-6xl mb-3">👑</div>
+      <h2 id="winner-title" class="font-temple text-2xl sm:text-3xl font-black text-amber-300 mb-2">Red Gaja Triumphs!</h2>
+      <p id="winner-sub" class="text-sm text-amber-100/85 mb-6">All 4 royal guardians have ascended the Sacred Center Gaddi!</p>
+      <button onclick="startGame()" class="w-full py-3.5 rounded-2xl font-temple font-bold uppercase tracking-wider bg-gradient-to-r from-amber-300 to-orange-500 text-amber-950 shadow-lg hover:brightness-110 transition">
+        Play Rematch
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. WEB AUDIO SYNTHESIS & DYNAMIC BUTTON THEME
+    // =========================================================================
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          audioCtx = new AudioContext();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {});
+      }
+    }
+
+    function updateTurnUI() {
+      const rollBtn = document.getElementById('roll-btn');
+      if (rollBtn) {
+        // Remove previous team styling classes
+        rollBtn.classList.remove('btn-team-red', 'btn-team-green', 'btn-team-gold', 'btn-team-blue');
+        
+        // Apply matching team theme class based on active player turn index
+        const teamClasses = ['btn-team-red', 'btn-team-green', 'btn-team-gold', 'btn-team-blue'];
+        const currentTeamClass = teamClasses[gameState.turn] || 'btn-team-red';
+        rollBtn.classList.add(currentTeamClass);
+      }
+    }
+
+    function playSound(type) {
+      try {
+        initAudio();
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'toss') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(520, now);
+          osc.frequency.exponentialRampToValueAtTime(180, now + 0.14);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+          osc.start(now);
+          osc.stop(now + 0.15);
+        } else if (type === 'hop') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(340, now);
+          osc.frequency.exponentialRampToValueAtTime(560, now + 0.12);
+          gain.gain.setValueAtTime(0.16, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+          osc.start(now);
+          osc.stop(now + 0.13);
+        } else if (type === 'capture') {
+          // Dramatic descending impact + temple chime
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(480, now);
+          osc.frequency.exponentialRampToValueAtTime(110, now + 0.35);
+          gain.gain.setValueAtTime(0.24, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+          osc.start(now);
+          osc.stop(now + 0.36);
+        } else if (type === 'bonus') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(523.25, now);
+          osc.frequency.setValueAtTime(659.25, now + 0.09);
+          osc.frequency.setValueAtTime(783.99, now + 0.18);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc.start(now);
+          osc.stop(now + 0.35);
+        } else if (type === 'win') {
+          [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.type = 'triangle';
+            o.frequency.setValueAtTime(freq, now + i * 0.12);
+            g.gain.setValueAtTime(0.2, now + i * 0.12);
+            g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.45);
+            o.connect(g);
+            g.connect(audioCtx.destination);
+            o.start(now + i * 0.12);
+            o.stop(now + i * 0.12 + 0.46);
+          });
+        }
+      } catch (e) {}
+    }
+
+    // =========================================================================
+    // 2. AUTHENTIC CHOWKA BARA 5x5 PATHS & TEAM CONFIGURATIONS
+    // =========================================================================
+    const TEAM_CONFIGS = [
+      {
+        id: 0,
+        name: 'Red Gaja',
+        emoji: '🐘',
+        colorHex: 0xdc2626,
+        accentHex: 0xfca5a5,
+        badgeBg: 'bg-red-600',
+        home: { r: 4, c: 2 },
+        // 25 steps: 0 (Home) -> 1..15 (Outer Ring) -> 16..23 (Inner Ring) -> 24 (Center Gaddi)
+        path: [
+          {r:4,c:2}, {r:4,c:3}, {r:4,c:4}, {r:3,c:4}, {r:2,c:4}, {r:1,c:4}, {r:0,c:4},
+          {r:0,c:3}, {r:0,c:2}, {r:0,c:1}, {r:0,c:0}, {r:1,c:0}, {r:2,c:0}, {r:3,c:0},
+          {r:4,c:0}, {r:4,c:1},
+          // Inner Ring (Clockwise)
+          {r:3,c:1}, {r:2,c:1}, {r:1,c:1}, {r:1,c:2}, {r:1,c:3}, {r:2,c:3}, {r:3,c:3}, {r:3,c:2},
+          // Center Gaddi
+          {r:2,c:2}
+        ]
+      },
+      {
+        id: 1,
+        name: 'Green Mayura',
+        emoji: '🦚',
+        colorHex: 0x059669,
+        accentHex: 0x6ee7b7,
+        badgeBg: 'bg-emerald-600',
+        home: { r: 2, c: 4 },
+        path: [
+          {r:2,c:4}, {r:1,c:4}, {r:0,c:4}, {r:0,c:3}, {r:0,c:2}, {r:0,c:1}, {r:0,c:0},
+          {r:1,c:0}, {r:2,c:0}, {r:3,c:0}, {r:4,c:0}, {r:4,c:1}, {r:4,c:2}, {r:4,c:3},
+          {r:4,c:4}, {r:3,c:4},
+          // Inner Ring
+          {r:3,c:3}, {r:3,c:2}, {r:3,c:1}, {r:2,c:1}, {r:1,c:1}, {r:1,c:2}, {r:1,c:3}, {r:2,c:3},
+          // Center Gaddi
+          {r:2,c:2}
+        ]
+      },
+      {
+        id: 2,
+        name: 'Gold Simha',
+        emoji: '🦁',
+        colorHex: 0xd97706,
+        accentHex: 0xfde68a,
+        badgeBg: 'bg-amber-600',
+        home: { r: 0, c: 2 },
+        path: [
+          {r:0,c:2}, {r:0,c:1}, {r:0,c:0}, {r:1,c:0}, {r:2,c:0}, {r:3,c:0}, {r:4,c:0},
+          {r:4,c:1}, {r:4,c:2}, {r:4,c:3}, {r:4,c:4}, {r:3,c:4}, {r:2,c:4}, {r:1,c:4},
+          {r:0,c:4}, {r:0,c:3},
+          // Inner Ring
+          {r:1,c:3}, {r:2,c:3}, {r:3,c:3}, {r:3,c:2}, {r:3,c:1}, {r:2,c:1}, {r:1,c:1}, {r:1,c:2},
+          // Center Gaddi
+          {r:2,c:2}
+        ]
+      },
+      {
+        id: 3,
+        name: 'Blue Vanara',
+        emoji: '🐒',
+        colorHex: 0x0284c7,
+        accentHex: 0x7dd3fc,
+        badgeBg: 'bg-sky-600',
+        home: { r: 2, c: 0 },
+        path: [
+          {r:2,c:0}, {r:3,c:0}, {r:4,c:0}, {r:4,c:1}, {r:4,c:2}, {r:4,c:3}, {r:4,c:4},
+          {r:3,c:4}, {r:2,c:4}, {r:1,c:4}, {r:0,c:4}, {r:0,c:3}, {r:0,c:2}, {r:0,c:1},
+          {r:0,c:0}, {r:1,c:0},
+          // Inner Ring
+          {r:1,c:1}, {r:1,c:2}, {r:1,c:3}, {r:2,c:3}, {r:3,c:3}, {r:3,c:2}, {r:3,c:1}, {r:2,c:1},
+          // Center Gaddi
+          {r:2,c:2}
+        ]
+      }
+    ];
+
+    // Safe Katte Squares (4 Home Houses + 4 Inner Crossed Squares + Center Gaddi)
+    const SAFE_KEYS = new Set([
+      '4,2', '2,4', '0,2', '2,0', // Outer Home Sanctuaries
+      '1,1', '1,3', '3,1', '3,3', // Inner Crossed Katte Squares
+      '2,2'                        // Center Gaddi
+    ]);
+
+    function isSquareSafe(r, c) {
+      return SAFE_KEYS.has(`${r},${c}`);
+    }
+
+    function getTileCoordForPlayerStep(teamIdx, step) {
+      const clamped = Math.max(0, Math.min(24, step));
+      return TEAM_CONFIGS[teamIdx].path[clamped];
+    }
+
+    // =========================================================================
+    // 3. GAME STATE
+    // =========================================================================
+    let gameState = {
+      started: false,
+      setupMode: '1v1_pvp', // '1v1_ai', '1v1_pvp', '4p_ai', '4p_pvp'
+      camMode: 'MAP', // 'MAP' = Whole Board View, 'HERO' = Close-up Character View
+      isAutoZooming: false,
+      turn: 0,
+      phase: 'ROLL', // 'ROLL', 'SELECT_PAWN', 'MOVING', 'GAMEOVER'
+      rolledSteps: 0,
+      hasBonusRoll: false,
+      players: [],
+      activeHeroMesh: null
+    };
+
+    function selectSetupMode(mode) {
+      gameState.setupMode = mode;
+      const btnIds = {
+        '1v1_ai': 'mode-1v1ai-btn',
+        '1v1_pvp': 'mode-1v1pvp-btn',
+        '4p_ai': 'mode-4ai-btn',
+        '4p_pvp': 'mode-4pvp-btn'
+      };
+      Object.entries(btnIds).forEach(([key, id]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (key === mode) {
+          el.className = 'p-2.5 rounded-2xl border-2 border-amber-400 bg-amber-500/25 text-amber-100 font-bold text-xs flex flex-col items-center gap-1 transition';
+        } else {
+          el.className = 'p-2.5 rounded-2xl border border-amber-400/30 bg-amber-950/50 text-amber-200/75 font-bold text-xs flex flex-col items-center gap-1 transition';
+        }
+      });
+
+      const is2Player = mode.startsWith('1v1');
+      document.getElementById('preview-team-1').classList.toggle('opacity-40', is2Player);
+      document.getElementById('preview-team-3').classList.toggle('opacity-40', is2Player);
+    }
+
+    // =========================================================================
+    // 4. THREE.JS 3D TEMPLE COURTYARD & CHARACTER PAWNS
+    // =========================================================================
+    let scene, camera, renderer;
+    let boardTileMeshes = {};
+    let characterMeshes = [[], [], [], []];
+    let raycaster = new THREE.Raycaster();
+    let pointer = new THREE.Vector2();
+
+    // Camera Orbit & Zoom controls
+    let camOrbitYaw = 0;
+    let targetCamYaw = 0;
+    let camZoomScale = 1.0;
+    let cameraTarget = new THREE.Vector3(0, 0, 0);
+    let isDraggingCam = false;
+    let prevPointerX = 0;
+    let clock = new THREE.Clock();
+    let torchLights = [];
+
+    const TILE_SIZE = 3.2;
+
+    // Returns the yaw angle that places teamIdx's home square at the bottom of the screen
+    function getHomeBottomYaw(teamIdx) {
+      // Team 0: Bottom (r=4,c=2) -> 0
+      // Team 1: Right  (r=2,c=4) -> +PI/2
+      // Team 2: Top    (r=0,c=2) -> +PI
+      // Team 3: Left   (r=2,c=0) -> -PI/2
+      const angles = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
+      return angles[teamIdx] || 0;
+    }
+
+    function alignBoardToPlayerHome(teamIdx) {
+      const desired = getHomeBottomYaw(teamIdx);
+      let diff = desired - camOrbitYaw;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      targetCamYaw = camOrbitYaw + diff;
+    }
+
+    function initThreeJS() {
+      const container = document.getElementById('canvas-container');
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x1b120b);
+      scene.fog = new THREE.FogExp2(0x1b120b, 0.015);
+
+      camera = new THREE.PerspectiveCamera(44, window.innerWidth / window.innerHeight, 0.1, 200);
+      camera.position.set(0, 27, 29);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      container.appendChild(renderer.domElement);
+
+      // Warm Temple Illumination
+      const ambientLight = new THREE.AmbientLight(0xffe4b5, 0.72);
+      scene.add(ambientLight);
+
+      const sunLight = new THREE.DirectionalLight(0xffedd5, 1.15);
+      sunLight.position.set(16, 32, 18);
+      sunLight.castShadow = true;
+      sunLight.shadow.mapSize.width = 2048;
+      sunLight.shadow.mapSize.height = 2048;
+      sunLight.shadow.camera.near = 2;
+      sunLight.shadow.camera.far = 85;
+      const d = 18;
+      sunLight.shadow.camera.left = -d;
+      sunLight.shadow.camera.right = d;
+      sunLight.shadow.camera.top = d;
+      sunLight.shadow.camera.bottom = -d;
+      scene.add(sunLight);
+
+      buildTempleCourtyard();
+      buildChowkaBoard();
+      buildAllCharacterMeshes();
+
+      // Pointer / Touch Events for Pawn Selection & Camera Orbit
+      const dom = renderer.domElement;
+      dom.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+      dom.addEventListener('wheel', onWheelZoom, { passive: true });
+      window.addEventListener('resize', onWindowResize);
+
+      animate();
+    }
+
+    function buildTempleCourtyard() {
+      // Stone courtyard floor
+      const floorGeo = new THREE.CylinderGeometry(36, 38, 1.2, 32);
+      const floorMat = new THREE.MeshStandardMaterial({ color: 0x2a1d15, roughness: 0.85 });
+      const floor = new THREE.Mesh(floorGeo, floorMat);
+      floor.position.y = -0.9;
+      floor.receiveShadow = true;
+      scene.add(floor);
+
+      // Decorative Golden Temple Pillars & Glowing Braziers at 4 corners
+      const pillarPositions = [
+        [-13, -13], [13, -13], [-13, 13], [13, 13]
+      ];
+      pillarPositions.forEach(([px, pz]) => {
+        const base = new THREE.Mesh(
+          new THREE.BoxGeometry(2.4, 1.2, 2.4),
+          new THREE.MeshStandardMaterial({ color: 0x452b1a, roughness: 0.7 })
+        );
+        base.position.set(px, 0.2, pz);
+        base.castShadow = true;
+        base.receiveShadow = true;
+        scene.add(base);
+
+        const col = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.75, 0.9, 8.5, 16),
+          new THREE.MeshStandardMaterial({ color: 0x6b3e21, roughness: 0.6 })
+        );
+        col.position.set(px, 4.8, pz);
+        col.castShadow = true;
+        scene.add(col);
+
+        // Glowing Fire Bowl
+        const flame = new THREE.Mesh(
+          new THREE.SphereGeometry(0.45, 12, 12),
+          new THREE.MeshBasicMaterial({ color: 0xffaa00 })
+        );
+        flame.position.set(px, 9.4, pz);
+        scene.add(flame);
+
+        const ptLight = new THREE.PointLight(0xff9900, 0.95, 22);
+        ptLight.position.set(px, 10.2, pz);
+        scene.add(ptLight);
+        torchLights.push({ light: ptLight, mesh: flame, baseY: 9.4 });
+      });
+    }
+
+    function buildChowkaBoard() {
+      // Carved Teakwood Board Base
+      const boardWidth = TILE_SIZE * 5 + 1.6;
+      const baseMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(boardWidth, 0.9, boardWidth),
+        new THREE.MeshStandardMaterial({ color: 0x3b1f0e, roughness: 0.55, metalness: 0.1 })
+      );
+      baseMesh.position.y = -0.35;
+      baseMesh.receiveShadow = true;
+      scene.add(baseMesh);
+
+      // Gold Rim Frame
+      const rimMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(boardWidth + 0.5, 0.55, boardWidth + 0.5),
+        new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.35, metalness: 0.65 })
+      );
+      rimMesh.position.y = -0.45;
+      scene.add(rimMesh);
+
+      // Create 5x5 Squares
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 5; c++) {
+          const x = (c - 2) * TILE_SIZE;
+          const z = (r - 2) * TILE_SIZE;
+          const isCenter = (r === 2 && c === 2);
+          const safe = isSquareSafe(r, c);
+
+          let tileColor = (r + c) % 2 === 0 ? 0x783f1d : 0x5c2e12;
+          if (isCenter) tileColor = 0xd97706;
+          else if (safe) tileColor = 0x92400e;
+
+          const tileGeo = new THREE.BoxGeometry(TILE_SIZE - 0.16, 0.28, TILE_SIZE - 0.16);
+          const tileMat = new THREE.MeshStandardMaterial({
+            color: tileColor,
+            roughness: isCenter ? 0.3 : 0.65,
+            metalness: isCenter ? 0.5 : 0.08
+          });
+          const tileMesh = new THREE.Mesh(tileGeo, tileMat);
+          tileMesh.position.set(x, 0.14, z);
+          tileMesh.receiveShadow = true;
+          scene.add(tileMesh);
+
+          // Crossed Katte Motif on Safe Squares
+          if (safe && !isCenter) {
+            const crossMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, roughness: 0.3, metalness: 0.6 });
+            const bar1 = new THREE.Mesh(new THREE.BoxGeometry(TILE_SIZE * 0.72, 0.05, 0.16), crossMat);
+            bar1.rotation.y = Math.PI / 4;
+            bar1.position.set(x, 0.3, z);
+            scene.add(bar1);
+
+            const bar2 = new THREE.Mesh(new THREE.BoxGeometry(TILE_SIZE * 0.72, 0.05, 0.16), crossMat);
+            bar2.rotation.y = -Math.PI / 4;
+            bar2.position.set(x, 0.3, z);
+            scene.add(bar2);
+          }
+
+          // Center Gaddi Lotus Crown
+          if (isCenter) {
+            const lotus = new THREE.Mesh(
+              new THREE.CylinderGeometry(0.85, 1.15, 0.25, 16),
+              new THREE.MeshStandardMaterial({ color: 0xfef08a, emissive: 0xb45309, emissiveIntensity: 0.35 })
+            );
+            lotus.position.set(x, 0.35, z);
+            scene.add(lotus);
+          }
+
+          // Team Emblem Marker on the 4 Home Squares
+          const homeOwner = TEAM_CONFIGS.find(t => t.home.r === r && t.home.c === c);
+          if (homeOwner) {
+            const ring = new THREE.Mesh(
+              new THREE.RingGeometry(0.95, 1.22, 24),
+              new THREE.MeshBasicMaterial({ color: homeOwner.colorHex, side: THREE.DoubleSide })
+            );
+            ring.rotation.x = -Math.PI / 2;
+            ring.position.set(x, 0.31, z);
+            scene.add(ring);
+          }
+
+          boardTileMeshes[`${r},${c}`] = { mesh: tileMesh };
+        }
+      }
+    }
+
+    function createGuardianPawn(teamIdx, pawnIdx) {
+      const cfg = TEAM_CONFIGS[teamIdx];
+      const group = new THREE.Group();
+
+      const bodyMat = new THREE.MeshStandardMaterial({
+        color: cfg.colorHex,
+        roughness: 0.35,
+        metalness: 0.15
+      });
+      const goldMat = new THREE.MeshStandardMaterial({
+        color: 0xfbbf24,
+        roughness: 0.25,
+        metalness: 0.75
+      });
+      const whiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const pupilMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+
+      // Pedestal Base
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.5, 0.22, 18), goldMat);
+      base.position.y = 0.11;
+      base.castShadow = true;
+      group.add(base);
+
+      // Torso
+      const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.4, 0.65, 16), bodyMat);
+      torso.position.y = 0.52;
+      torso.castShadow = true;
+      group.add(torso);
+
+      // Head
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 16), bodyMat);
+      head.position.y = 1.02;
+      head.castShadow = true;
+      group.add(head);
+
+      // Expressive Eyes
+      [-0.11, 0.11].forEach(ex => {
+        const eye = new THREE.Mesh(new THREE.SphereGeometry(0.065, 10, 10), whiteMat);
+        eye.position.set(ex, 1.06, 0.26);
+        group.add(eye);
+
+        const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 8), pupilMat);
+        pupil.position.set(ex, 1.06, 0.31);
+        group.add(pupil);
+      });
+
+      // Species-specific silhouette features
+      if (teamIdx === 0) {
+        // Elephant Trunk & Ears
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.09, 0.36, 10), bodyMat);
+        trunk.position.set(0, 0.92, 0.34);
+        trunk.rotation.x = 0.45;
+        group.add(trunk);
+        [-0.32, 0.32].forEach(earX => {
+          const ear = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.32, 0.24), bodyMat);
+          ear.position.set(earX, 1.04, 0);
+          group.add(ear);
+        });
+      } else if (teamIdx === 1) {
+        // Peacock Feather Crest
+        for (let a = -0.4; a <= 0.4; a += 0.4) {
+          const feather = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.45, 8), goldMat);
+          feather.position.set(Math.sin(a) * 0.25, 1.32, -0.18);
+          feather.rotation.z = -a;
+          group.add(feather);
+        }
+      } else if (teamIdx === 2) {
+        // Lion Golden Mane
+        const mane = new THREE.Mesh(new THREE.TorusGeometry(0.31, 0.11, 10, 18), goldMat);
+        mane.position.set(0, 1.02, -0.02);
+        group.add(mane);
+      } else {
+        // Monkey Ears & Curled Tail
+        [-0.31, 0.31].forEach(earX => {
+          const ear = new THREE.Mesh(new THREE.SphereGeometry(0.11, 10, 10), goldMat);
+          ear.position.set(earX, 1.05, 0);
+          group.add(ear);
+        });
+      }
+
+      // Golden Crown
+      const crown = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.22, 8), goldMat);
+      crown.position.y = 1.4;
+      group.add(crown);
+
+      // Selectable Highlight Ring around feet
+      const selectRing = new THREE.Mesh(
+        new THREE.RingGeometry(0.54, 0.72, 24),
+        new THREE.MeshBasicMaterial({ color: 0xfef08a, side: THREE.DoubleSide })
+      );
+      selectRing.rotation.x = -Math.PI / 2;
+      selectRing.position.y = 0.04;
+      selectRing.visible = false;
+      group.add(selectRing);
+
+      group.userData = { teamIdx, pawnIdx, selectRing };
+      return group;
+    }
+
+    function buildAllCharacterMeshes() {
+      for (let t = 0; t < 4; t++) {
+        characterMeshes[t] = [];
+        for (let p = 0; p < 4; p++) {
+          const mesh = createGuardianPawn(t, p);
+          const home = TEAM_CONFIGS[t].home;
+          const pos = tileToWorld(home.r, home.c, p, t);
+          mesh.position.copy(pos);
+          scene.add(mesh);
+          characterMeshes[t].push(mesh);
+        }
+      }
+    }
+
+    function tileToWorld(r, c, pawnIdx = 0, teamIdx = 0) {
+      const baseX = (c - 2) * TILE_SIZE;
+      const baseZ = (r - 2) * TILE_SIZE;
+      // Sub-tile corner offsets so multiple pawns on the same tile don't overlap
+      const offsets = [
+        [-0.58, -0.58],
+        [ 0.58, -0.58],
+        [-0.58,  0.58],
+        [ 0.58,  0.58]
+      ];
+      const idx = (pawnIdx + teamIdx) % 4;
+      return new THREE.Vector3(baseX + offsets[idx][0], 0.28, baseZ + offsets[idx][1]);
+    }
+
+    function hopMeshTo(mesh, targetPos, duration = 230) {
+      return new Promise(resolve => {
+        const startPos = mesh.position.clone();
+        const startTime = performance.now();
+
+        // Face direction of movement
+        const dx = targetPos.x - startPos.x;
+        const dz = targetPos.z - startPos.z;
+        if (Math.hypot(dx, dz) > 0.05) {
+          mesh.rotation.y = Math.atan2(dx, dz);
+        }
+
+        function stepAnim(now) {
+          const elapsed = now - startTime;
+          const t = Math.min(1, elapsed / duration);
+          mesh.position.lerpVectors(startPos, targetPos, t);
+          mesh.position.y = 0.28 + Math.sin(t * Math.PI) * 1.15;
+          if (t < 1) {
+            requestAnimationFrame(stepAnim);
+          } else {
+            mesh.position.copy(targetPos);
+            resolve();
+          }
+        }
+        requestAnimationFrame(stepAnim);
+      });
+    }
+
+    // =========================================================================
+    // 5. 2D KAVADE SHELLS UI & TOSS LOGIC
+    // =========================================================================
+    function renderCowrieShells(states = [true, false, true, false], isTossing = false) {
+      const tray = document.getElementById('cowrie-tray');
+      tray.innerHTML = '';
+      states.forEach((mouthUp, i) => {
+        const card = document.createElement('div');
+        card.className = `cowrie-card ${mouthUp ? 'mouth-up' : ''} ${isTossing ? 'tossing' : ''}`;
+        card.style.animationDelay = `${i * 0.05}s`;
+
+        // Crisp 2D SVG Cowrie Shell (Mouth-up toothed slit vs Smooth patterned dome)
+        const svg = mouthUp
+          ? `<svg viewBox="0 0 60 80" class="w-10 h-12">
+               <ellipse cx="30" cy="40" rx="20" ry="31" fill="#fffbeb" stroke="#f59e0b" stroke-width="3"/>
+               <path d="M30 14 C27 30, 33 50, 30 66" stroke="#78350f" stroke-width="4" stroke-linecap="round" fill="none"/>
+               <line x1="23" y1="22" x2="27" y2="22" stroke="#92400e" stroke-width="2.2"/>
+               <line x1="22" y1="31" x2="27" y2="31" stroke="#92400e" stroke-width="2.2"/>
+               <line x1="22" y1="40" x2="27" y2="40" stroke="#92400e" stroke-width="2.2"/>
+               <line x1="22" y1="49" x2="27" y2="49" stroke="#92400e" stroke-width="2.2"/>
+               <line x1="23" y1="58" x2="27" y2="58" stroke="#92400e" stroke-width="2.2"/>
+               <line x1="33" y1="22" x2="37" y2="22" stroke="#92400e" stroke-width="2.2"/>
+               <line x1="33" y1="31" x2="38" y2="31" stroke="#92400e" stroke-width="2.2"/>
+               <line x1="33" y1="40" x2="38" y2="40" stroke="#92400e" stroke-width="2.2"/>
+               <line x1="33" y1="49" x2="38" y2="49" stroke="#92400e" stroke-width="2.2"/>
+               <line x1="33" y1="58" x2="37" y2="58" stroke="#92400e" stroke-width="2.2"/>
+             </svg>`
+          : `<svg viewBox="0 0 60 80" class="w-10 h-12">
+               <ellipse cx="30" cy="40" rx="20" ry="31" fill="#d97706" stroke="#92400e" stroke-width="3"/>
+               <ellipse cx="26" cy="36" rx="11" ry="20" fill="#f59e0b" opacity="0.65"/>
+               <circle cx="30" cy="26" r="2.5" fill="#78350f" opacity="0.55"/>
+               <circle cx="32" cy="40" r="3" fill="#78350f" opacity="0.55"/>
+               <circle cx="29" cy="54" r="2.5" fill="#78350f" opacity="0.55"/>
+             </svg>`;
+
+        card.innerHTML = `
+          ${svg}
+          <span class="text-[9px] font-bold uppercase tracking-wider mt-0.5 ${mouthUp ? 'text-amber-300' : 'text-amber-200/50'}">
+            ${mouthUp ? '1' : '0'}
+          </span>
+        `;
+        tray.appendChild(card);
+      });
+    }
+
+    async function handleTossClick() {
+      if (gameState.phase !== 'ROLL') return;
+      const currentPlayer = gameState.players[gameState.turn];
+      if (currentPlayer.isAI) return;
+      await performKavadeToss();
+    }
+
+    async function performKavadeToss() {
+      gameState.phase = 'ROLLING';
+      document.getElementById('roll-btn').disabled = true;
+      playSound('toss');
+
+      // Toss 4 cowries
+      const shells = [
+        Math.random() < 0.5,
+        Math.random() < 0.5,
+        Math.random() < 0.5,
+        Math.random() < 0.5
+      ];
+      renderCowrieShells(shells, true);
+
+      await new Promise(r => setTimeout(r, 680));
+
+      const upCount = shells.filter(Boolean).length;
+      // Authentic Chowka Bara scoring: 0 mouth-up = 8 (Bara), 4 mouth-up = 4 (Chowka), else 1..3
+      const steps = upCount === 0 ? 8 : upCount;
+      const isBonus = (steps === 4 || steps === 8);
+
+      gameState.rolledSteps = steps;
+      gameState.hasBonusRoll = isBonus;
+
+      const labelText = steps === 8 ? '8 (BARA! +Bonus)' : steps === 4 ? '4 (CHOWKA! +Bonus)' : `${steps} Step${steps > 1 ? 's' : ''}`;
+      document.getElementById('roll-result-pill').innerText = labelText;
+
+      if (isBonus) {
+        playSound('bonus');
+        showToast(`✨ Rolled ${steps}! Bonus Turn Earned!`);
+      }
+
+      // Find all valid movable pawns for current player
+      const validPawns = getValidPawnsForPlayer(gameState.turn, steps);
+      const p = gameState.players[gameState.turn];
+
+      if (validPawns.length === 0) {
+        showToast(`No valid moves for ${steps} steps!`);
+        await new Promise(r => setTimeout(r, 1100));
+        finishTurn(false);
+        return;
+      }
+
+      if (p.isAI) {
+        // AI chooses best strategic move
+        await new Promise(r => setTimeout(r, 550));
+        const chosenPawn = chooseBestAIPawn(gameState.turn, validPawns, steps);
+        await executePawnMove(chosenPawn, steps);
+      } else if (validPawns.length === 1) {
+        // Auto-move if only 1 legal piece can move
+        showToast(`Moving ${p.name}'s guardian ${steps} spaces...`);
+        await new Promise(r => setTimeout(r, 400));
+        await executePawnMove(validPawns[0], steps);
+      } else {
+        // Let human click any glowing piece
+        gameState.phase = 'SELECT_PAWN';
+        document.getElementById('turn-hint').innerText = `Click a glowing guardian to move ${steps} steps`;
+        validPawns.forEach(idx => {
+          characterMeshes[gameState.turn][idx].userData.selectRing.visible = true;
+        });
+      }
+    }
+
+    function getValidPawnsForPlayer(teamIdx, steps) {
+      const p = gameState.players[teamIdx];
+      const maxAllowedStep = p.hasCaptured ? 24 : 15; // Must capture an opponent before entering inner ring (step 16+)
+      const valid = [];
+
+      for (let i = 0; i < 4; i++) {
+        const cur = p.pawns[i];
+        if (cur === 24) continue; // Already crowned in Center Gaddi
+        if (cur + steps <= maxAllowedStep) {
+          valid.push(i);
+        }
+      }
+      return valid;
+    }
+
+    function chooseBestAIPawn(teamIdx, validPawns, steps) {
+      const p = gameState.players[teamIdx];
+      // 1. Prioritize capturing an opponent
+      for (const idx of validPawns) {
+        const destCoord = getTileCoordForPlayerStep(teamIdx, p.pawns[idx] + steps);
+        if (!isSquareSafe(destCoord.r, destCoord.c)) {
+          const victims = findOpponentsAt(teamIdx, destCoord.r, destCoord.c);
+          if (victims.length > 0) return idx;
+        }
+      }
+      // 2. Prioritize reaching Center Gaddi
+      for (const idx of validPawns) {
+        if (p.pawns[idx] + steps === 24) return idx;
+      }
+      // 3. Otherwise advance lead piece
+      return validPawns.sort((a, b) => p.pawns[b] - p.pawns[a])[0];
+    }
+
+    // =========================================================================
+    // 6. MOVEMENT, AUTO-ZOOM & OPPONENT CAPTURE ("BACK TO HOUSE")
+    // =========================================================================
+    function findOpponentsAt(attackerTeamIdx, r, c) {
+      const victims = [];
+      for (let t = 0; t < 4; t++) {
+        if (t === attackerTeamIdx || !gameState.players[t]?.active) continue;
+        for (let pIdx = 0; pIdx < 4; pIdx++) {
+          const step = gameState.players[t].pawns[pIdx];
+          if (step === 0 || step === 24) continue; // Home or Gaddi are safe
+          const coord = getTileCoordForPlayerStep(t, step);
+          if (coord.r === r && coord.c === c) {
+            victims.push({ teamIdx: t, pawnIdx: pIdx });
+          }
+        }
+      }
+      return victims;
+    }
+
+    async function executePawnMove(pawnIdx, steps) {
+      gameState.phase = 'MOVING';
+      // Hide selection rings
+      for (let t = 0; t < 4; t++) {
+        for (let i = 0; i < 4; i++) {
+          characterMeshes[t][i].userData.selectRing.visible = false;
+        }
+      }
+
+      const p = gameState.players[gameState.turn];
+      const mesh = characterMeshes[gameState.turn][pawnIdx];
+      gameState.activeHeroMesh = mesh;
+
+      // Auto-zoom in closely to follow character while moving
+      gameState.isAutoZooming = true;
+      gameState.camMode = 'HERO';
+      updateCamBtnLabel();
+
+      const startStep = p.pawns[pawnIdx];
+      const targetStep = startStep + steps;
+
+      for (let s = startStep + 1; s <= targetStep; s++) {
+        p.pawns[pawnIdx] = s;
+        const coord = getTileCoordForPlayerStep(gameState.turn, s);
+        const destWorld = tileToWorld(coord.r, coord.c, pawnIdx, gameState.turn);
+        await hopMeshTo(mesh, destWorld, 220);
+        playSound('hop');
+      }
+
+      // Check landing interactions
+      const finalCoord = getTileCoordForPlayerStep(gameState.turn, targetStep);
+      let earnedCaptureBonus = false;
+
+      if (targetStep === 24) {
+        playSound('bonus');
+        showToast(`👑 ${p.name}'s guardian reached the Sacred Center Gaddi!`);
+      } else if (!isSquareSafe(finalCoord.r, finalCoord.c)) {
+        // Check if another character is standing on this square!
+        const opponentsHere = findOpponentsAt(gameState.turn, finalCoord.r, finalCoord.c);
+        if (opponentsHere.length > 0) {
+          playSound('capture');
+          p.hasCaptured = true;
+          earnedCaptureBonus = true;
+
+          // Send each captured opponent straight back to their Home House!
+          for (const victim of opponentsHere) {
+            const victimPlayer = gameState.players[victim.teamIdx];
+            victimPlayer.pawns[victim.pawnIdx] = 0;
+            const victimMesh = characterMeshes[victim.teamIdx][victim.pawnIdx];
+            const victimHome = TEAM_CONFIGS[victim.teamIdx].home;
+            const homeWorld = tileToWorld(victimHome.r, victimHome.c, victim.pawnIdx, victim.teamIdx);
+            await hopMeshTo(victimMesh, homeWorld, 420);
+          }
+
+          const victimTeamName = TEAM_CONFIGS[opponentsHere[0].teamIdx].name;
+          showToast(`⚔️ CAPTURED! ${victimTeamName} sent back to their House! +Bonus Toss!`);
+        }
+      }
+
+      // Pause briefly so player sees the landing, then zoom back out to Whole Board View
+      await new Promise(r => setTimeout(r, 420));
+      if (gameState.isAutoZooming) {
+        gameState.camMode = 'MAP';
+        gameState.isAutoZooming = false;
+        updateCamBtnLabel();
+      }
+
+      // Check Victory Condition (all 4 pawns at step 24)
+      if (p.pawns.every(step => step === 24)) {
+        gameState.phase = 'GAMEOVER';
+        playSound('win');
+        document.getElementById('winner-emoji').innerText = p.emoji;
+        document.getElementById('winner-title').innerText = `${p.name} Triumphs!`;
+        document.getElementById('gameover-modal').classList.remove('hidden');
+        updateHUD();
+        return;
+      }
+
+      finishTurn(gameState.hasBonusRoll || earnedCaptureBonus);
+    }
+
+    function finishTurn(grantBonus) {
+      if (!grantBonus) {
+        do {
+          gameState.turn = (gameState.turn + 1) % 4;
+        } while (!gameState.players[gameState.turn].active);
+      }
+      gameState.phase = 'ROLL';
+      gameState.rolledSteps = 0;
+      gameState.hasBonusRoll = false;
+
+      // Rotate board smoothly so the active player's house sits at the bottom
+      alignBoardToPlayerHome(gameState.turn);
+      updateHUD();
+
+      const nextPlayer = gameState.players[gameState.turn];
+      if (nextPlayer.isAI && gameState.started) {
+        setTimeout(() => {
+          if (gameState.phase === 'ROLL' && gameState.players[gameState.turn].isAI) {
+            performKavadeToss();
+          }
+        }, 850);
+      }
+    }
+
+    // =========================================================================
+    // 7. HUD, CAMERA TOGGLES & POINTER INTERACTION
+    // =========================================================================
+    function startGame() {
+      initAudio();
+      document.getElementById('start-modal').classList.add('hidden');
+      document.getElementById('gameover-modal').classList.add('hidden');
+      document.getElementById('hud-top').classList.remove('hidden');
+      document.getElementById('hud-bottom').classList.remove('hidden');
+
+      const mode = gameState.setupMode;
+      const is2P = mode.startsWith('1v1');
+      const isVsAI = mode.endsWith('ai');
+
+      gameState.started = true;
+      gameState.turn = 0;
+      gameState.phase = 'ROLL';
+      gameState.camMode = 'MAP';
+      gameState.isAutoZooming = false;
+
+      // In 2-player modes, activate Team 0 (Bottom) and Team 2 (Opposite Top)
+      gameState.players = TEAM_CONFIGS.map((cfg, idx) => {
+        const active = is2P ? (idx === 0 || idx === 2) : true;
+        const isAI = active ? (isVsAI ? idx !== 0 : false) : false;
+        return {
+          ...cfg,
+          active,
+          isAI,
+          hasCaptured: false,
+          pawns: [0, 0, 0, 0]
+        };
+      });
+
+      // Reset all 3D character meshes to their home houses (hide inactive teams)
+      for (let t = 0; t < 4; t++) {
+        const isTeamActive = gameState.players[t].active;
+        for (let p = 0; p < 4; p++) {
+          const home = TEAM_CONFIGS[t].home;
+          const pos = tileToWorld(home.r, home.c, p, t);
+          characterMeshes[t][p].visible = isTeamActive;
+          characterMeshes[t][p].position.copy(pos);
+          characterMeshes[t][p].userData.selectRing.visible = false;
+        }
+      }
+
+      camOrbitYaw = 0;
+      targetCamYaw = 0;
+      renderCowrieShells([true, false, true, false], false);
+      updateCamBtnLabel();
+      updateHUD();
+      showToast('🪷 Welcome to Chowka Bara! Toss the Kavade shells.');
+    }
+
+    function resetToMenu() {
+      gameState.started = false;
+      gameState.phase = 'ROLL';
+      document.getElementById('hud-top').classList.add('hidden');
+      document.getElementById('hud-bottom').classList.add('hidden');
+      document.getElementById('gameover-modal').classList.add('hidden');
+      document.getElementById('start-modal').classList.remove('hidden');
+    }
+
+    function toggleRulesModal(show) {
+      const modal = document.getElementById('rules-modal');
+      if (show) modal.classList.remove('hidden');
+      else modal.classList.add('hidden');
+    }
+
+    function toggleCameraMode() {
+      gameState.isAutoZooming = false;
+      gameState.camMode = gameState.camMode === 'HERO' ? 'MAP' : 'HERO';
+      if (gameState.camMode === 'HERO') {
+        const p = gameState.players[gameState.turn];
+        const leadIdx = p ? p.pawns.indexOf(Math.max(...p.pawns)) : 0;
+        gameState.activeHeroMesh = characterMeshes[gameState.turn][Math.max(0, leadIdx)];
+      }
+      updateCamBtnLabel();
+    }
+
+    function updateCamBtnLabel() {
+      document.getElementById('camLabel').innerText = gameState.camMode === 'HERO' ? 'Hero 3D View' : 'Whole Board';
+    }
+
+    function updateHUD() {
+      if (!gameState.players.length) return;
+      const p = gameState.players[gameState.turn];
+
+      const badge = document.getElementById('turn-badge');
+      badge.className = `w-9 h-9 rounded-xl flex items-center justify-center text-lg font-bold shadow-inner border border-amber-300/40 text-white ${p.badgeBg}`;
+      badge.innerText = p.emoji;
+
+      document.getElementById('turn-name').innerText = `${p.name} ${p.isAI ? '(AI)' : '(Your Turn)'}`;
+
+      const cutBadge = document.getElementById('cut-badge');
+      if (p.hasCaptured) {
+        cutBadge.innerText = '🔓 Inner Ring Open';
+        cutBadge.className = 'text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-950/90 text-emerald-300 border border-emerald-500/40 font-bold';
+      } else {
+        cutBadge.innerText = '🔒 Cut Needed';
+        cutBadge.className = 'text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-950/90 text-amber-300 border border-amber-500/40 font-bold';
+      }
+
+      document.getElementById('turn-hint').innerText = p.isAI
+        ? `${p.name} is contemplating the sacred shells...`
+        : 'Toss the 4 Kavade cowrie shells';
+
+      const rollBtn = document.getElementById('roll-btn');
+      if (rollBtn) {
+        rollBtn.disabled = p.isAI || gameState.phase !== 'ROLL';
+        rollBtn.innerText = p.isAI
+          ? `🤖 ${p.name} Thinking...`
+          : `🐚 ${p.name}: Toss Shells`;
+      }
+      updateTurnUI();
+
+      // Update Score Pills (only active teams)
+      const pillsEl = document.getElementById('team-pills');
+      pillsEl.innerHTML = gameState.players
+        .filter(pl => pl.active)
+        .map(pl => {
+          const crowned = pl.pawns.filter(s => s === 24).length;
+          const activeRing = pl.id === gameState.turn ? 'ring-2 ring-amber-400' : 'opacity-75';
+          return `
+            <div class="glass-pill px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-xs font-bold text-amber-100 ${activeRing}">
+              <span>${pl.emoji}</span>
+              <span>${crowned}/4</span>
+            </div>
+          `;
+        }).join('');
+    }
+
+    function showToast(msg) {
+      const container = document.getElementById('toast-container');
+      container.innerHTML = `
+        <div class="toast-anim glass-pill px-5 py-2.5 rounded-2xl text-amber-200 font-bold text-xs sm:text-sm shadow-2xl border border-amber-400/50 whitespace-nowrap">
+          ${msg}
+        </div>
+      `;
+    }
+
+    function onPointerDown(e) {
+      isDraggingCam = true;
+      prevPointerX = e.clientX;
+
+      if (gameState.phase !== 'SELECT_PAWN') return;
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(pointer, camera);
+      const teamMeshes = characterMeshes[gameState.turn];
+      const hits = raycaster.intersectObjects(teamMeshes, true);
+
+      if (hits.length > 0) {
+        let obj = hits[0].object;
+        while (obj && obj.userData.pawnIdx === undefined) {
+          obj = obj.parent;
+        }
+        if (obj && obj.userData.selectRing && obj.userData.selectRing.visible) {
+          executePawnMove(obj.userData.pawnIdx, gameState.rolledSteps);
+        }
+      }
+    }
+
+    function onPointerMove(e) {
+      if (!isDraggingCam) return;
+      const dx = e.clientX - prevPointerX;
+      prevPointerX = e.clientX;
+      targetCamYaw -= dx * 0.0065;
+      camOrbitYaw = targetCamYaw;
+    }
+
+    function onPointerUp() {
+      isDraggingCam = false;
+    }
+
+    function onWheelZoom(e) {
+      camZoomScale = Math.max(0.55, Math.min(1.55, camZoomScale + e.deltaY * 0.0008));
+    }
+
+    function onWindowResize() {
+      if (!camera || !renderer) return;
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    // =========================================================================
+    // 8. MAIN ANIMATION LOOP
+    // =========================================================================
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+
+      // Smoothly interpolate camera yaw toward active player's home orientation
+      if (!isDraggingCam) {
+        camOrbitYaw += (targetCamYaw - camOrbitYaw) * 0.08;
+      }
+
+      // Flickering temple torch lights
+      torchLights.forEach((torch, i) => {
+        torch.light.intensity = 0.85 + Math.sin(t * 7 + i) * 0.18;
+        torch.mesh.scale.setScalar(0.95 + Math.sin(t * 9 + i) * 0.12);
+      });
+
+      // Gentle idle breathing & highlight ring spin on pawns
+      for (let tm = 0; tm < 4; tm++) {
+        for (let p = 0; p < 4; p++) {
+          const m = characterMeshes[tm][p];
+          if (!m) continue;
+          if (gameState.phase !== 'MOVING' || m !== gameState.activeHeroMesh) {
+            m.position.y = 0.28 + Math.sin(t * 2.8 + tm + p) * 0.035;
+          }
+          if (m.userData.selectRing && m.userData.selectRing.visible) {
+            m.userData.selectRing.scale.setScalar(1 + Math.sin(t * 6) * 0.14);
+          }
+        }
+      }
+
+      // Smooth Camera Interpolation (Auto-zooms into Hero on move, returns to Whole Board after)
+      if (gameState.camMode === 'HERO' && gameState.activeHeroMesh) {
+        const radius = 5.6 * camZoomScale;
+        const height = 3.4 * camZoomScale;
+        const offsetX = Math.sin(camOrbitYaw) * radius;
+        const offsetZ = Math.cos(camOrbitYaw) * radius;
+
+        const targetCamPos = gameState.activeHeroMesh.position.clone().add(new THREE.Vector3(offsetX, height, offsetZ));
+        camera.position.lerp(targetCamPos, 0.085);
+        cameraTarget.lerp(gameState.activeHeroMesh.position.clone().add(new THREE.Vector3(0, 0.9, 0)), 0.085);
+      } else {
+        const radius = 29 * camZoomScale;
+        const height = 27 * camZoomScale;
+        const offsetX = Math.sin(camOrbitYaw) * radius;
+        const offsetZ = Math.cos(camOrbitYaw) * radius;
+
+        const overviewPos = new THREE.Vector3(offsetX, height, offsetZ);
+        camera.position.lerp(overviewPos, 0.07);
+        cameraTarget.lerp(new THREE.Vector3(0, 0, 0), 0.07);
+      }
+      camera.lookAt(cameraTarget);
+
+      renderer.render(scene, camera);
+    }
+
+    window.onload = function () {
+      initThreeJS();
+      renderCowrieShells([true, false, true, false], false);
+    };
+  </script>
+</body>
+</html>
+    
+  </body>
+  
+</html>
